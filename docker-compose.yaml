@@ -25,7 +25,8 @@ services:
     networks:
       - node-net
     volumes:
-      - ./node:/usr/src/app
+      - ./node:/usr/src/ap
+      - /usr/src/app/node_modules
     depends_on:
       - db
     command: node index.js
