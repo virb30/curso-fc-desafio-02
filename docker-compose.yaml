@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+
+  server:
+    build:
+      context: ./nginx
+    image: virb30/fullcycle:nginx-node
+    container_name: server
+    tty: true
+    depends_on:
+      - app
+    ports:
+      - "8080:80"
+    networks:
+      - node-net
+
+  app:
+    build:
+      context: ./node
+    image: virb30/fullcycle:node-people
+    container_name: app
+    entrypoint: dockerize -wait tcp://db:3306 -timeout 20s docker-entrypoint.sh
+    tty: true
+    networks:
+      - node-net
+    volumes:
+      - ./node:/usr/src/app
+    depends_on:
+      - db
+    command: node index.js
+
+  db:
+    image: mysql:5.7
+    container_name: db
+    tty: true
+    networks:
+      - node-net
+    environment:
+      - MYSQL_DATABASE=my_app
+      - MYSQL_ROOT_PASSWORD=root
+    volumes:
+      - ./db/docker-entrypoint-initdb.d/:/docker-entrypoint-initdb.d/
+      - ./db/mysql:/var/lib/mysql
+
+networks:
+  node-net:
+    driver: bridge
